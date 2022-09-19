@@ -1,0 +1,22 @@
+{
+  "redis": {
+    "host": "localhost:49153/",
+    "username": "default",
+    "password": "redispw",
+    "ssl": false
+  },
+  "cookieSecret": "myCookieSecret123!",
+  "cookieMaxAge": "1h",
+  "users": [
+    {
+      "username": "admin",
+      "password": "password",
+      "role": "admin"
+    },
+    {
+      "username": "user",
+      "password": "password",
+      "role": "user"
+    }
+  ]
+}
