@@ -1,4 +1,4 @@
-import ejs from 'ejs';
+import ejs from "ejs";
 
 const loginPage = `
 <style>

@@ -1,6 +1,5 @@
-import * as prom_client from 'prom-client';
-import * as bullmq from 'bullmq';
-import { PrometheusMetrics } from './promMetricsCollector';
+import * as bullmq from "bullmq";
+import { PrometheusMetrics } from "./promMetricsCollector";
 
 interface MonitoredQueueOptions {
   bullmqOpts: bullmq.QueueBaseOptions;
@@ -20,11 +19,15 @@ export class PrometheusMonitoredQueue extends bullmq.QueueEvents {
   queue: bullmq.Queue;
   canceled = false;
 
-  constructor(name: string, metrics: PrometheusMetrics, opts: MonitoredQueueOptions) {
+  constructor(
+    name: string,
+    metrics: PrometheusMetrics,
+    opts: MonitoredQueueOptions
+  ) {
     super(name, opts.bullmqOpts);
     this.queue = new bullmq.Queue(name, opts.bullmqOpts);
     this.metrics = metrics;
-    this.on('completed', this.onCompleted);
+    this.on("completed", this.onCompleted);
     this.loop(2000);
   }
 
@@ -36,8 +39,12 @@ export class PrometheusMonitoredQueue extends bullmq.QueueEvents {
 
     const completedDuration = job.finishedOn! - job.timestamp!; // both cannot be null
     const processedDuration = job.finishedOn! - job.processedOn!; // both cannot be null
-    this.metrics.completedDuration.labels({ queue: this.name }).observe(completedDuration);
-    this.metrics.processedDuration.labels({ queue: this.name }).observe(processedDuration);
+    this.metrics.completedDuration
+      .labels({ queue: this.name })
+      .observe(completedDuration);
+    this.metrics.processedDuration
+      .labels({ queue: this.name })
+      .observe(processedDuration);
   }
 
   async loop(ms = 5000) {
@@ -45,11 +52,12 @@ export class PrometheusMonitoredQueue extends bullmq.QueueEvents {
       await this.updateGauges();
       await sleep(ms);
     }
-    console.log('Stopped updating gauges for ' + this.name);
+    console.log("Stopped updating gauges for " + this.name);
   }
 
   async updateGauges() {
-    const { completed, active, delayed, failed, waiting } = await this.queue.getJobCounts();
+    const { completed, active, delayed, failed, waiting } =
+      await this.queue.getJobCounts();
     this.metrics.activeGauge.labels({ queue: this.name }).set(active);
     this.metrics.completedGauge.labels({ queue: this.name }).set(completed);
     this.metrics.delayedGauge.labels({ queue: this.name }).set(delayed);

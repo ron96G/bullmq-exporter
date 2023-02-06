@@ -1,16 +1,16 @@
-import { Router } from 'express';
-import express from 'express';
-import session from 'express-session';
-import { ExpressAdapter } from '@bull-board/express';
-import { createBullBoard } from '@bull-board/api';
-import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
-import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import { ensureLoggedIn } from 'connect-ensure-login';
-import { Queue } from 'bullmq';
-import { renderLoginPage } from './views/login';
-import logger from '../logger';
-import parse from 'parse-duration';
+import { Router } from "express";
+import express from "express";
+import session from "express-session";
+import { ExpressAdapter } from "@bull-board/express";
+import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import { ensureLoggedIn } from "connect-ensure-login";
+import { Queue } from "bullmq";
+import { renderLoginPage } from "./views/login";
+import logger from "../logger";
+import parse from "parse-duration";
 
 export interface User {
   username: string;
@@ -26,7 +26,6 @@ export interface DashboardOptions {
   queues: Array<Queue>;
 }
 
-const log = logger.child({ pkg: 'dashboard' });
 let users: Map<string, User> = new Map();
 
 passport.use(
@@ -36,7 +35,7 @@ passport.use(
       return cb(null, { user: user.username, role: user.role });
     }
     return cb(null, false);
-  }),
+  })
 );
 
 passport.serializeUser((user, cb) => {
@@ -62,9 +61,13 @@ export function ConfigureRoutes(app: Router, opts: DashboardOptions) {
   const cookieMaxAge = parse(opts.cookieMaxAge);
   users = new Map(opts.users.map((u) => [u.username, u]));
 
-  log.info(`Setting up routes for dashboard with basePath ${basePath == '' ? '/' : basePath}`);
-  const failedLoginRedirect = basePath + '/ui/login?invalid=true';
-  const requireLoginRedirect = basePath + '/ui/login';
+  logger.info(
+    `Setting up routes for dashboard with basePath ${
+      basePath == "" ? "/" : basePath
+    }`
+  );
+  const failedLoginRedirect = basePath + "/ui/login?invalid=true";
+  const requireLoginRedirect = basePath + "/ui/login";
 
   app.use(passport.initialize());
   app.use(
@@ -73,20 +76,26 @@ export function ConfigureRoutes(app: Router, opts: DashboardOptions) {
       saveUninitialized: true,
       resave: true,
       cookie: { maxAge: cookieMaxAge },
-    }),
+    })
   );
   app.use(express.urlencoded({ extended: false }));
   app.use(passport.session());
 
   app.get(`/ui/login`, (req, res) => {
-    res.send(renderLoginPage(req.query.invalid === 'true', requireLoginRedirect));
+    res.send(
+      renderLoginPage(req.query.invalid === "true", requireLoginRedirect)
+    );
   });
 
-  app.post(`/ui/login`, passport.authenticate('local', { failureRedirect: failedLoginRedirect }), (req, res) => {
-    const user = (req.session as any)?.passport.user;
-    if (user.role == 'admin') return res.redirect(`${basePath}/ui/admin`);
-    return res.redirect(`${basePath}/ui`);
-  });
+  app.post(
+    `/ui/login`,
+    passport.authenticate("local", { failureRedirect: failedLoginRedirect }),
+    (req, res) => {
+      const user = (req.session as any)?.passport.user;
+      if (user.role == "admin") return res.redirect(`${basePath}/ui/admin`);
+      return res.redirect(`${basePath}/ui`);
+    }
+  );
 
   // readOnly bull board
   const readOnlyAdapter = new ExpressAdapter();
@@ -96,7 +105,11 @@ export function ConfigureRoutes(app: Router, opts: DashboardOptions) {
     serverAdapter: readOnlyAdapter,
   });
 
-  app.use(`/ui`, ensureLoggedIn({ redirectTo: requireLoginRedirect }), readOnlyAdapter.getRouter());
+  app.use(
+    `/ui`,
+    ensureLoggedIn({ redirectTo: requireLoginRedirect }),
+    readOnlyAdapter.getRouter()
+  );
 
   // admin bull board
   const adminAdapter = new ExpressAdapter();
@@ -109,7 +122,7 @@ export function ConfigureRoutes(app: Router, opts: DashboardOptions) {
   app.use(
     `/ui/admin`,
     ensureLoggedIn({ redirectTo: requireLoginRedirect }),
-    ensureRole({ role: 'admin', failureRedirect: `${basePath}/ui` }),
-    adminAdapter.getRouter(),
+    ensureRole({ role: "admin", failureRedirect: `${basePath}/ui` }),
+    adminAdapter.getRouter()
   );
 }

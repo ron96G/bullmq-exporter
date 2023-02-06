@@ -11,11 +11,9 @@ Service that acts as a central component to monitor BullMQ:
 
 The following section will provide a brief overview of the libraries and practices used in the implementation of this service.
 
-
 ### BullMQ Dashboard
 
 Implemented by using [@bull-board](https://github.com/felixmosh/bull-board) and secured using [passport](https://www.passportjs.org/).
-
 
 ### Prometheus Exporter
 
@@ -32,8 +30,8 @@ Furthermore, a cron job is executed every n seconds which collects the current s
 
 Thus, the following metrics are collected:
 
-| Metric                    | type      | description |
-|---------------------------|-----------|-------------|
+| Metric                    | type      | description                                             |
+| ------------------------- | --------- | ------------------------------------------------------- |
 | bullmq_processed_duration | histogram | Processing time for completed jobs                      |
 | bullmq_completed_duration | histogram | Completion time for jobs                                |
 | bullmq_completed          | gauge     | Total number of completed jobs                          |
@@ -43,3 +41,26 @@ Thus, the following metrics are collected:
 | bullmq_waiting            | gauge     | Total number of jobs waiting to be processed            |
 
 Each metric also has the attribute `queue` which indicated which queue the metric is associated with.
+
+## How to use
+
+1. Install the dependencies
+
+```
+npm install
+```
+
+2. Default environment is `local`. This can be set using the `NODE_ENV` variable.
+
+```
+export NODE_ENV=production
+```
+
+3. Make sure that the required config file is present: `./configs/config-${NODE_ENV}.json` (see [local](./configs/config-local.json)).
+4. Start the server
+
+```
+npm run dev
+```
+
+5. Access the resources `http://localhost:8080/bullmq/ui/login` or `http://localhost:8080/prometheus/metrics`

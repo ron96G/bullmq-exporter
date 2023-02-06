@@ -1,6 +1,6 @@
 {
   "redis": {
-    "host": "localhost:49153/",
+    "host": "localhost:6379/",
     "username": "default",
     "password": "redispw",
     "ssl": false

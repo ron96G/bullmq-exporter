@@ -1,35 +1,36 @@
-import fs from 'fs';
-import http from 'http';
-import https from 'https';
-import { app } from './app';
-import logger from './logger';
-import { handleShutdown } from './utils';
+import fs from "fs";
+import http from "http";
+import https from "https";
+import { app } from "./app";
+import logger from "./logger";
+import { handleShutdown } from "./utils";
 
-const log = logger.child({ pkg: "server" })
-const httpsPort = process.env.HTTPS_PORT || 8443;
-const httpPort = process.env.HTTP_PORT || 8080;
+const keyPath = process.env.TLS_KEY_FILE || "/etc/tls/tls.key";
+const crtPath = process.env.TLS_CRT_FILE || "/etc/tls/tls.crt";
 
-// comment this in if you want to change the loglevel programmatically
-// instead of env variable.
-// log.changeGlobalLevel('WARN');
+const tlsCredentials = {
+  key: fs.existsSync(keyPath) ? fs.readFileSync(keyPath, "utf8") : "",
+  cert: fs.existsSync(crtPath) ? fs.readFileSync(crtPath, "utf8") : "",
+};
 
-if (["local", undefined].includes(process.env.NODE_ENV!)) {
-  // local environment serves http
-  const httpServer = http.createServer(app);
-  handleShutdown(httpServer);
-  httpServer.listen(httpPort, () => log.info(`Service listening on http://0.0.0.0:${httpPort}`));
+const tlsEnabled = tlsCredentials.cert && tlsCredentials.key;
 
-} else if (process.env.NODE_ENV !== 'test') {
-  // live environment only serves https
-  const credentials = {
-    key: fs.readFileSync('/etc/tls/tls.key', 'utf8'),
-    cert: fs.readFileSync('/etc/tls/tls.crt', 'utf8'),
-  };
-  const httpsServer = https.createServer(credentials, app);
-  handleShutdown(httpsServer);
-  httpsServer.listen(httpsPort, () => log.info(`Service listening on https://0.0.0.0:${httpsPort}`));
+let server;
+let port: number;
 
+if (tlsEnabled) {
+  server = https.createServer(tlsCredentials, app);
+  port = +(process.env.HTTPS_PORT || 8443);
 } else {
-  // ignoring in testing to prevent port occupation
-  log.info(`Running in test. Not listening...`);
+  server = http.createServer(app);
+  port = +(process.env.HTTP_PORT || 8080);
+}
+handleShutdown(server);
+
+if (process.env.NODE_ENV !== "test") {
+  server.listen(port, () =>
+    logger.info(
+      `Service listening on ${tlsEnabled ? "https" : "http"}://0.0.0.0:${port}`
+    )
+  );
 }
