@@ -56,7 +56,7 @@ Note that not all values are supported.
 | REDIS_HOST     | Redis host, e. g. "localhost:6379/" |
 | REDIS_USERNAME | Redis username                      |
 | REDIS_PASSWORD | Redis password                      |
-| REDIS_SSL      | Wether to use ssl                   |
+| REDIS_SSL      | Whether to use ssl                   |
 
 ### Local
 
