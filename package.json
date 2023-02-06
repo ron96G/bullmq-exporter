@@ -8,11 +8,11 @@
     "lint": "eslint . --ext ts",
     "prettier": "prettier -w src/**/*.ts",
     "build": "tsc",
+    "clean": "rm -rf node_modules dist",
     "run": "node dist/server.js",
     "dev": "ts-node src/server.ts",
     "ts-node": "ts-node src/server.ts",
-    "nodemon": "nodemon",
-    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production'){process.exit(1)} \" || husky install"
+    "nodemon": "nodemon"
   },
   "keywords": [],
   "author": "",
