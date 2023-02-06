@@ -32,7 +32,7 @@ Furthermore, a cron job is executed every n seconds which collects the current s
 
 Thus, the following metrics are collected:
 
-| Metric                    | type      | description                                             |
+| Metric                    | Type      | Description                                             |
 | ------------------------- | --------- | ------------------------------------------------------- |
 | bullmq_processed_duration | histogram | Processing time for completed jobs                      |
 | bullmq_completed_duration | histogram | Completion time for jobs                                |
@@ -46,23 +46,56 @@ Each metric also has the attribute `queue` which indicated which queue the metri
 
 ## How to use
 
+### Variables
+
+These environment variables may be set to overwrite the values in the config file.
+Note that not all values are supported.
+
+| Name           | Description                         |
+| -------------- | ----------------------------------- |
+| REDIS_HOST     | Redis host, e. g. "localhost:6379/" |
+| REDIS_USERNAME | Redis username                      |
+| REDIS_PASSWORD | Redis password                      |
+| REDIS_SSL      | Wether to use ssl                   |
+
+### Local
+
 1. Install the dependencies
 
-```
+```bash
 npm install
 ```
 
 2. Default environment is `local`. This can be set using the `NODE_ENV` variable.
 
-```
+```bash
 export NODE_ENV=production
 ```
 
 3. Make sure that the required config file is present: `./configs/config-${NODE_ENV}.json` (see [local](./configs/config-local.json)).
 4. Start the server
 
-```
+```bash
 npm run dev
 ```
 
 5. Access the resources `http://localhost:8080/bullmq/ui/login` or `http://localhost:8080/prometheus/metrics`
+
+### Docker
+
+The Dockerimage is published using the [local](./configs/config-local.json) configuration. In most cases that will not be sufficient and should be overwritten.
+This can be done using environment variables (see [here](#variables)) or by mounting a separate file.
+
+```bash
+# This needs a config file under ./configs/config-dev.json
+docker run \
+    -it \
+    --mount type=bind,source=$(pwd)/configs,target=/app/configs \
+    --env=NODE_ENV=dev \
+    --env=REDIS_HOST=some-host:6379/ \
+    rgummich/bullmq-exporter
+```
+
+### Kubernetes
+
+In Kubernetes this may be done using [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/).
