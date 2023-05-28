@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@bull-board/api": "^4.11.0",
+    "@bull-board/api": "^5.2.0",
     "@bull-board/express": "^4.11.0",
     "bullmq": "^3.6.2",
     "connect-ensure-login": "^0.1.1",
